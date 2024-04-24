@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.tthiago.ads.workshopmongo.domain.Post;
 import com.tthiago.ads.workshopmongo.domain.User;
 import com.tthiago.ads.workshopmongo.dto.userDTO;
 import com.tthiago.ads.workshopmongo.services.UserService;
@@ -29,19 +30,27 @@ public class UserResource {
 	
 	
 	@GetMapping //metodo usado no Postman
-	public ResponseEntity <List<userDTO>> findAll(){ //ResponseEntity é uma forma de manipular as respostas.
+	public ResponseEntity <List<userDTO>> findAll() { //ResponseEntity é uma forma de manipular as respostas.
 		List<User> list = service.findAll();
 		List<userDTO> listDto = list.stream().map(x -> new userDTO(x)).collect(Collectors.toList());
 		return ResponseEntity.ok().body(listDto);
 	}
 	
+	@GetMapping (value="/{id}/posts")
+	public ResponseEntity <List<Post>> findPosts(@PathVariable String id) {
+		User obj = service.findById(id);
+		return ResponseEntity.ok().body(obj.getPosts()); 
+	}
+	
+	
+	
 	@GetMapping (value="/{id}")
-	public ResponseEntity <userDTO> findById(@PathVariable String id){ //anotação serve para que o id seja o mesmo passado como argumento
+	public ResponseEntity <userDTO> findById(@PathVariable String id) { //anotação serve para que o id seja o mesmo passado como argumento
 		User obj = service.findById(id);
 		return ResponseEntity.ok().body(new userDTO(obj)); 
 	}
 	@PostMapping
-	public ResponseEntity <Void> insert(@RequestBody userDTO objdto){
+	public ResponseEntity <Void> insert(@RequestBody userDTO objdto) {
 		User obj = service.fromDTO(objdto);
 		obj = service.insert(obj);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getId()).toUri();
@@ -57,7 +66,7 @@ public class UserResource {
 	}
 	
 	@PutMapping (value="/{id}")
-	public ResponseEntity <Void> update(@RequestBody userDTO objdto, @PathVariable String id){
+	public ResponseEntity <Void> update(@RequestBody userDTO objdto, @PathVariable String id) {
 		User obj = service.fromDTO(objdto);
 		obj.setId(id);
 		obj = service.update(obj);
